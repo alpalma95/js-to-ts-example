@@ -1,42 +1,36 @@
 import { BaseComponent } from "../lib/BaseComponent";
-import { state } from "../lib/state";
+import { todos, addTodo, todoCount } from "../services/todo.service";
 
 export default class TodoList extends BaseComponent {
-  constructor() {
-    super();
-  }
-
-  todos = state([
-    { id: 1, text: "Learn JavaScript" },
-    { id: 2, text: "Learn Vue" },
-    { id: 3, text: "Learn Svelte" },
-  ]);
-
   setup() {
-    const { list, add } = this.refs;
+    const { list, totalTodos, title } = this.refs;
 
-    const renderTodos = this.todos.register((todos) => {
-        list.innerHTML = todos
-          .map(
-            (todo) => /* html */ `
-              <li>${todo.text}</li>
+    const renderTodos = todos.register((todos) => {
+      list.innerHTML = todos
+        .map(
+          (todo) => /* html */ `
+              <todo-item data-id="${todo.id}" data-text="${todo.text}"></todo-item>
           `
-          )
-          .join("");
-      })
+        )
+        .join("");
+    });
 
-      add.addEventListener("click", () => {
-        this.todos.next([...this.todos.value, { id: Date.now(), text: "New Todo" }]);
-      });
+    const totalTodosCount = todoCount.register((count) => {
+      totalTodos.innerHTML = count == 0 ? "All done!" : count;
+      title.style.display = count == 0 ? "none" : null;
+    });
 
-    this.addEffect(renderTodos);
+    this.handlers.add = addTodo;
+
+    this.addEffect(renderTodos, totalTodosCount);
   }
 
   render() {
     return /* html */ `
-            <ul data-ref="list">
-            </ul>
-            <button data-ref="add">Add</button>
+            <button data-handle="click:add">Add Todo</button>
+            <h2 data-ref="title">Number of todos:</h2>
+            <h3 data-ref="totalTodos"></h3>
+            <ul data-ref="list"></ul>
         `;
   }
 }
