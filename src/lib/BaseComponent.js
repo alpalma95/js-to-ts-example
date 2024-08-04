@@ -9,10 +9,10 @@ export class BaseComponent extends HTMLElement {
   handlers = {};
 
   addEffect(cb, deps = []) {
-    const effects = []
-    deps.forEach((dep) => { 
-        effects.push(dep.register(cb))
-     })
+    const effects = [];
+    deps.forEach((dep) => {
+      effects.push(dep.register(cb));
+    });
 
     this.cleanups.push(...effects);
   }

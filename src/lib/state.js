@@ -1,12 +1,12 @@
-const runEffect = (cb) => ({ cb });
-export const state = (value, mutations = {}) => {
+const Effect = (cb) => ({ cb: () => setTimeout(cb) });
+export const state = (value) => {
   const internal = ({
     value,
     effects: [],
     register(cb) {
-      const effect = runEffect(cb);
+      const effect = Effect(cb);
       this.effects.push(effect);
-      cb(this.value);
+      setTimeout(cb);
       return () => this.unregister(effect);
     },
     unregister(effect) {
@@ -19,12 +19,9 @@ export const state = (value, mutations = {}) => {
         this.value = newValue;
       }
   
-      this.effects.forEach((eff) => eff.cb(this.value));
+      this.effects.forEach((eff) => eff.cb());
     },
   })
-  for (const mutation of Object.values(mutations)) {
-    internal[mutation.name] = mutation.bind(internal);
-  }
  
   return internal
 };

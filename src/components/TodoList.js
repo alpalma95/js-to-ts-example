@@ -1,19 +1,23 @@
 import { BaseComponent } from "../lib/BaseComponent";
-import { todos, addTodo, todoCount } from "../services/todo.service";
+import { todos, todoCount } from "../services/todo.service";
 
 export default class TodoList extends BaseComponent {
-    constructor() {
-        super("todo-list");
-    }
+  constructor() {
+    super("list");
+  }
   setup() {
-    const { list, totalTodos, title } = this.refs;
-
-    this.handlers.add = addTodo;
+    const { list, totalTodos, title, emptyMessage } = this.refs;
 
     this.addEffect(() => {
-      totalTodos.innerHTML =
-        todoCount.value == 0 ? "All done!" : todoCount.value;
-      title.style.display = todoCount.value == 0 ? "none" : null;
+      if (todoCount.value === 0) {
+        totalTodos.innerHTML = "All done!";
+        title.style.display = "none";
+        emptyMessage.style.display = null;
+      } else {
+        totalTodos.innerHTML = todoCount.value;
+        title.style.display = null;
+        emptyMessage.style.display = "none";
+      }
     }, [todoCount]);
 
     this.addEffect(() => {
@@ -28,11 +32,13 @@ export default class TodoList extends BaseComponent {
   }
 
   render() {
-    return /* html */ `
-            <button data-handle="todo-list.click:add">Add Todo</button>
-            <h2 data-ref="todo-list.title">Number of todos:</h2>
-            <h3 data-ref="todo-list.totalTodos"></h3>
-            <ul data-ref="todo-list.list"></ul>
+    return /*html*/ `
+            <h2 data-ref="list.title">Number of todos: <span data-ref="list.totalTodos"></span></h2>
+            <h2 data-ref="list.emptyMessage">Start adding todos!</h2>
+            <ul data-ref="list.list"></ul>
         `;
   }
 }
+
+if (!customElements.get("todo-list"))
+  customElements.define("todo-list", TodoList);
