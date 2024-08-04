@@ -2,6 +2,9 @@ import { BaseComponent } from "../lib/BaseComponent";
 import { removeTodo } from "../services/todo.service";
 
 export default class TodoItem extends BaseComponent {
+    constructor() {
+        super('todo-item');
+    }
     setup() {
         this.handlers.removeTodo = () => removeTodo(+this.props.id);
     }
@@ -10,7 +13,7 @@ export default class TodoItem extends BaseComponent {
         return /*html*/`
             <li class="todo-item">
                 <span>${props.text}</span>
-                <button data-handle="click:removeTodo">Delete</button>
+                <button data-handle="todo-item.click:removeTodo">Delete</button>
             </li>
         `;
     }

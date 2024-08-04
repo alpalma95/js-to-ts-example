@@ -1,40 +1,65 @@
 export class BaseComponent extends HTMLElement {
-    constructor() {
-        super();
-    }
+  constructor(baseName) {
+    super();
+    this.baseName = baseName;
+  }
 
-    props = this.dataset;
-    cleanups = [];
-    handlers = {};
+  props = this.dataset;
+  cleanups = [];
+  handlers = {};
 
-    addEffect(...effects) {
-        this.cleanups.push(...effects);
-    }
-    connectedCallback() {
-        this.innerHTML = this.render(this.props);
-        this.refs = [... this.querySelectorAll(`[data-ref]`)].reduce((acc, el) => {
-            const refName = el.dataset.ref;
-            acc[refName] && Array.isArray(acc[refName]) 
-            ? acc[refName].push(el) 
-            : acc[refName] ? acc[refName] = [acc[refName], el]
-            : acc[refName] = el;
-            
-            return acc;
-        }, {});
+  addEffect(cb, deps = []) {
+    const effects = []
+    deps.forEach((dep) => { 
+        effects.push(dep.register(cb))
+     })
 
-        this.setup?.();
+    this.cleanups.push(...effects);
+  }
+  connectedCallback() {
+    this.innerHTML = this.render(this.props);
+    this.refs = [
+      ...this.querySelectorAll(
+        `${this.baseName ? `[data-ref^=${this.baseName}]` : "[data-ref]"}`
+      ),
+    ].reduce((acc, el) => {
+      const rawRefName = el.dataset.ref;
+      const refName = rawRefName.includes(".")
+        ? rawRefName.split(".")[1]
+        : rawRefName;
 
-        [...this.querySelectorAll(`[data-handle]`)].forEach((el) => {
-            const [eventName, handlerName] = el.dataset.handle.split(":");
-            el.addEventListener(eventName, (e) => {
-                this.handlers?.[handlerName]?.(e);
-            });
-        })
-        this.onInit?.();
-    }
+      acc[refName] && Array.isArray(acc[refName])
+        ? acc[refName].push(el)
+        : acc[refName]
+        ? (acc[refName] = [acc[refName], el])
+        : (acc[refName] = el);
 
-    disconnectedCallback() {
-        this.onDestroy?.();
-        this.cleanups.forEach((cleanup) => cleanup());
-    }
-} 
+      return acc;
+    }, {});
+
+    this.setup?.();
+
+    [
+      ...this.querySelectorAll(
+        `${this.baseName ? `[data-handle^=${this.baseName}]` : "[data-handle]"}`
+      ),
+    ].forEach((el) => {
+      const attribute = el.dataset.handle;
+
+      const name = attribute.includes(".")
+        ? attribute.split(".").slice(1).at(0).split(":")
+        : attribute.split(":");
+
+      const [eventName, handlerName] = name;
+      el.addEventListener(eventName, (e) => {
+        this.handlers?.[handlerName]?.(e);
+      });
+    });
+    this.onInit?.();
+  }
+
+  disconnectedCallback() {
+    this.onDestroy?.();
+    this.cleanups.forEach((cleanup) => cleanup());
+  }
+}
