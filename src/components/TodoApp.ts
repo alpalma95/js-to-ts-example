@@ -1,4 +1,4 @@
-import { BaseComponent } from "../lib/BaseComponent.js";
+import { BaseComponent } from "../lib/BaseComponent.ts";
 
 export default class TodoApp extends BaseComponent {
   render() {
