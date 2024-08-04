@@ -1,10 +1,6 @@
 import { BaseComponent } from "../lib/BaseComponent.js";
 
 export default class TodoApp extends BaseComponent {
-  constructor() {
-    super();
-    console.log(this.localName)
-  }
   render() {
     return /* html */ `
       <h1>Todo App - Vanilla JS</h1>
