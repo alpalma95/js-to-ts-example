@@ -1,6 +1,9 @@
-const Effect = (cb) => ({ cb: () => setTimeout(cb) });
-export const state = (value) => {
-  const internal = ({
+import type { State, Effect, VoidFunction } from "../interfaces/State";
+
+const Effect = (cb: VoidFunction): Effect => ({ cb: () => setTimeout(cb) });
+
+export const state = <T>(value: T): State<T> => {
+  const internal: State<T> = ({
     value,
     effects: [],
     register(cb) {
@@ -14,7 +17,7 @@ export const state = (value) => {
     },
     next(newValue) {
       if (typeof newValue === "function") {
-        this.value = newValue(this.value);
+        this.value = (newValue as (oldValue: T) => T)(this.value);
       } else {
         this.value = newValue;
       }
@@ -26,8 +29,8 @@ export const state = (value) => {
   return internal
 };
 
-export const derived = (cb, deps = []) => {
-  const derived = state(0);
+export const derived = <T>(cb: () => T, deps: State<any>[] = []) => {
+  const derived = state<T>('' as T);
   const c = () => {
     derived.next(cb())
   }
